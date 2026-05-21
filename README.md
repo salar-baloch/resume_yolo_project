@@ -37,5 +37,49 @@ Notes
 - If you encounter a runtime error from Paddle (oneDNN / ConvertPirAttribute2RuntimeAttribute), see `README_OCR.md` for troubleshooting. The repository includes guarded initialization to avoid hangs and a pytesseract fallback.
 - Do not commit heavy model files to the repository. Keep `models/` in `.gitignore` (already set).
 
+API keys & secrets (how to store and update)
+----------------------------------------
+
+This project may need API keys or other secrets if you extend it (for example, calling external parsers, storing data in cloud, or using third-party OCR/LLM APIs). Follow these best practices:
+
+- Use a local `.env` file during development and never commit it. Add `.env` to `.gitignore`.
+- Provide a `.env.example` in the repo with descriptive placeholder names so contributors know which variables to set.
+- Use the `python-dotenv` package or `os.environ` to read keys in your scripts.
+- For CI/CD (GitHub Actions), set secrets in the repository settings and read them as environment variables in workflows.
+
+Example `.env` (DO NOT COMMIT):
+
+```env
+API_KEY_MY_SERVICE=sk_live_...your_key_here...
+STORAGE_URL=https://your-storage.example.com
+OTHER_SECRET=foobar
+```
+
+How to load `.env` safely in Python:
+
+```py
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # loads variables from .env into environment
+API_KEY = os.getenv('API_KEY_MY_SERVICE')
+```
+
+Updating API keys (local dev):
+
+- Edit `.env` and set the new values.
+- If your app caches tokens, restart the process to pick up the change.
+
+Updating API keys (GitHub production):
+
+1. Go to your GitHub repository -> Settings -> Secrets -> Actions.
+2. Add a new repository secret (e.g. `API_KEY_MY_SERVICE`) with the secret value.
+3. In your GitHub Actions workflow, access it via `secrets.API_KEY_MY_SERVICE` and pass it to the job step as an environment variable.
+
+Security tips
+- Never print secrets to logs. Mask them in CI where possible.
+- Rotate keys regularly and delete revoked keys.
+- Store long-lived credentials in a secure vault for production environments.
+
 License
 - Add your license file if you plan to publish this repo.
